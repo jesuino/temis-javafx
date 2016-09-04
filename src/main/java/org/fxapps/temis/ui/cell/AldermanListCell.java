@@ -3,6 +3,8 @@ package org.fxapps.temis.ui.cell;
 import org.fxapps.temis.model.Alderman;
 import org.fxapps.temis.ui.cache.ImageCache;
 
+import javafx.geometry.Pos;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -23,6 +25,10 @@ public class AldermanListCell extends ListCell<Alderman> {
 		}
 		setGraphic(photo(image));
 		setText(item.getName());
+		setGraphicTextGap(10);
+		setAlignment(Pos.CENTER);
+		setContentDisplay(ContentDisplay.TOP);
+		setPrefWidth(200);
 	}
 
 	static final ImageView photo(Image image) {

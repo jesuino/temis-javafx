@@ -4,10 +4,11 @@ import org.fxapps.temis.model.Alderman;
 import org.fxapps.temis.service.TemisClientService;
 import org.fxapps.temis.ui.cell.AldermanListCell;
 
+import javafx.geometry.Orientation;
 import javafx.scene.control.ListView;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
 
-public class TemisClientUI extends StackPane {
+public class TemisClientUI extends BorderPane {
 	
 	private final static String BASE_URL = "http://temis-server.herokuapp.com/";
 
@@ -25,13 +26,16 @@ public class TemisClientUI extends StackPane {
 		buildAldermenList();
 		
 		// add to the pane - soon we will control the navigation
-		getChildren().add(aldermenList);
+
+		setTop(aldermenList);
 		
 	}
 
 	private void buildAldermenList() {
 		aldermenList = new ListView<>();
+		aldermenList.setOrientation(Orientation.HORIZONTAL);
 		aldermenList.setCellFactory(param -> new AldermanListCell());
+		aldermenList.setPrefHeight(220);
 		aldermenList.getItems().setAll(service.aldermen());
 	}
 	
