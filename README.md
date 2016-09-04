@@ -1,2 +1,3 @@
-# temis-javafx
-Um cliente em JavaFX para o projeto Temis -> https://github.com/pedro-hos/temis-api
+TemisFX
+--
+Um cliente em JavaFX para o Web Service [Temis](https://github.com/pedro-hos/temis-api).  
