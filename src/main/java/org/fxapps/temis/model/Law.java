@@ -50,5 +50,10 @@ public class Law {
 	public void setProjectLawNumber(String projectLawNumber) {
 		this.projectLawNumber = projectLawNumber;
 	}
+	
+	@Override
+	public String toString() {
+		return this.getTitle();
+	}
 
 }

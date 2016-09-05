@@ -35,7 +35,6 @@ public class AldermanListCell extends ListCell<Alderman> {
 		ImageView imageView = new ImageView(image);
 		imageView.setFitWidth(120);
 		imageView.setFitHeight(150);
-		
 		imageView.setStyle("-fx-effect: dropshadow(three-pass-box, rgba(0,0,255,0.8), 30, 0, 0, 0);");
 		return imageView;
 	}
