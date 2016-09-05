@@ -1,12 +1,14 @@
 package org.fxapps.temis.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.fxapps.temis.model.Alderman;
+import org.fxapps.temis.model.Law;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,6 +35,18 @@ public class TemisClientServiceTest {
 		assertTrue(foundFirst.isPresent());
 		Optional<Alderman> foundLast = aldermen.stream().filter(a ->  a.getName().equals(lastAlderman)).findFirst();
 		assertTrue(foundLast.isPresent());
+	}
+	
+	@Test
+	public void testLaws() {
+		String aldermanName = "Carlinhos Tiaca";
+		Alderman alderman = temisClientService.aldermen().stream()
+					.filter(a -> a.getName().equals(aldermanName))
+					.findFirst().orElseThrow(() -> {
+			return new RuntimeException("Vereador com nome " + aldermanName + " não encontrado");
+		});
+		List<Law> laws = temisClientService.laws(alderman, 0, 20);
+		assertEquals(17, laws.size());
 	}
 
 }

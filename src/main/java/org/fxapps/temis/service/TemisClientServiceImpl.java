@@ -14,11 +14,18 @@ import org.fxapps.temis.model.Alderman;
 import org.fxapps.temis.model.Law;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 class TemisClientServiceImpl implements TemisClientService {
 
 	private TemisClientProxy temisClientProxy;
 
 	public TemisClientServiceImpl(String baseUrl) {
+		createClient(baseUrl);
+	}
+
+	private void createClient(String baseUrl) {
 		Client client = ClientBuilder.newClient();
 		WebTarget target = client.target(baseUrl);
 		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
@@ -32,29 +39,71 @@ class TemisClientServiceImpl implements TemisClientService {
 
 	@Override
 	public List<Law> laws(Alderman aldermen, int page, int numberOfResults) {
-		return temisClientProxy.laws(aldermen.getName(), page, numberOfResults);
+		return temisClientProxy.laws(aldermen.getName(), page, numberOfResults).getEmbedded().getLaws();
 	}
 
 	@Override
 	public List<Law> laws(int page, int numberOfResults) {
-		return temisClientProxy.laws(page, numberOfResults);
+		return temisClientProxy.laws(page, numberOfResults).getEmbedded().getLaws();
 	}
 
 	@Path("api")
 	public static interface TemisClientProxy {
 
+		@GET
 		@Path("laws")
-		@GET
-		public List<Law> laws(@QueryParam("page") int p, @QueryParam("size") int s);
+		public LawList laws(@QueryParam("page") int p, @QueryParam("size") int s);
 
-		@Path("alderman")
 		@GET
+		@Path("alderman")
 		public List<Alderman> aldermen();
 
-		@Path("laws/alderman")
 		@GET
-		public List<Law> laws(@PathParam("name") String name, @QueryParam("page") int p, @QueryParam("size") int s);
+		@Path("laws/alderman/{name}")
+		public LawList laws(@PathParam("name") String name, @QueryParam("page") int p, @QueryParam("size") int s);
 
+	}
+	
+	
+	
+	/**
+	 * Wrapping class for Laws
+	 * 
+	 * @author wsiqueir
+	 *
+	 */
+	@JsonIgnoreProperties("_links")
+	public static class LawList {
+		
+		@JsonProperty("_embedded")
+		private Embedded embedded;
+		
+		public Embedded getEmbedded() {
+			return embedded;
+		}
+		public void setEmbedded(Embedded embedded) {
+			this.embedded = embedded;
+		}
+	}
+
+	/**
+	 * Wrapping class for laws list
+	 * 
+	 * @author wsiqueir
+	 *
+	 */
+	public static class Embedded {
+
+		@JsonProperty("lawList")
+		private List<Law> laws;
+
+		public List<Law> getLaws() {
+			return laws;
+		}
+
+		public void setLaws(List<Law> laws) {
+			this.laws = laws;
+		}
 	}
 
 }
