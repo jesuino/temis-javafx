@@ -19,34 +19,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 class TemisClientServiceImpl implements TemisClientService {
 
-	private TemisClientProxy temisClientProxy;
+	private String baseUrl;
 
 	public TemisClientServiceImpl(String baseUrl) {
-		createClient(baseUrl);
-	}
-
-	private void createClient(String baseUrl) {
-		Client client = ClientBuilder.newClient();
-		WebTarget target = client.target(baseUrl);
-		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
-		temisClientProxy = rtarget.proxy(TemisClientProxy.class);
+		this.baseUrl = baseUrl;
 	}
 
 	@Override
 	public List<Alderman> aldermen() {
-		return temisClientProxy.aldermen();
+		return getClient().aldermen();
 	}
 
 	@Override
 	public List<Law> laws(Alderman aldermen, int page, int numberOfResults) {
-		return temisClientProxy.laws(aldermen.getName(), page, numberOfResults).getEmbedded().getLaws();
+		return getClient().laws(aldermen.getName(), page, numberOfResults).getEmbedded().getLaws();
 	}
 
 	@Override
 	public List<Law> laws(int page, int numberOfResults) {
-		return temisClientProxy.laws(page, numberOfResults).getEmbedded().getLaws();
+		return getClient().laws(page, numberOfResults).getEmbedded().getLaws();
 	}
 
+	private TemisClientProxy getClient() {
+		Client client = ClientBuilder.newClient();
+		WebTarget target = client.target(baseUrl);
+		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
+		return rtarget.proxy(TemisClientProxy.class);
+	}
+	
 	@Path("api")
 	public static interface TemisClientProxy {
 
