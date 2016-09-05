@@ -37,6 +37,13 @@ public class TemisClientUI extends BorderPane {
 		aldermenList.setCellFactory(param -> new AldermanListCell());
 		aldermenList.setPrefHeight(220);
 		aldermenList.getItems().setAll(service.aldermen());
+		aldermenList.getItems().stream()
+			.filter(a -> a.getName().equals("Mesa Diretora"))
+			.findFirst()
+			.ifPresent(a -> {
+				aldermenList.getSelectionModel().select(a);
+				aldermenList.scrollTo(a);
+			});
 	}
 	
 	
