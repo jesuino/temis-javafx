@@ -7,18 +7,21 @@ import org.fxapps.temis.model.Law;
 import org.fxapps.temis.service.TemisClientService;
 import org.fxapps.temis.ui.cell.AldermanListCell;
 
+import javafx.animation.FadeTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
+import javafx.scene.Cursor;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 
 public class TemisClientUI extends BorderPane {
 
@@ -68,6 +71,7 @@ public class TemisClientUI extends BorderPane {
 
 	private void buildAldermenList() {
 		aldermenList = new ListView<>();
+		aldermenList.setCursor(Cursor.HAND);
 		aldermenList.setOrientation(Orientation.HORIZONTAL);
 		aldermenList.setCellFactory(param -> new AldermanListCell());
 		aldermenList.setPrefHeight(220);
@@ -95,6 +99,7 @@ public class TemisClientUI extends BorderPane {
 			protected void succeeded() {
 				super.succeeded();
 				loadingProperty.set(false);
+				fadeCenterPane();
 				List<Law> laws = this.getValue();
 				listLaws.getItems().setAll(laws);
 				lblTitleLaw.setText("Foram " + laws.size() + " leis votadas ou criados por " + alderman.getName());
@@ -118,5 +123,15 @@ public class TemisClientUI extends BorderPane {
 		new Thread(loadLawsTask).start();
 
 	}
+	
+	private void fadeCenterPane(){
+		FadeTransition ft = new FadeTransition(Duration.seconds(1));
+		ft.setFromValue(0);
+		ft.setToValue(1);
+		ft.setAutoReverse(true);
+		ft.setNode(getCenter());
+		ft.play();
+	}
+	
 
 }
