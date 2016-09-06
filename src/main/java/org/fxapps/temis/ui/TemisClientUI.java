@@ -1,6 +1,7 @@
 package org.fxapps.temis.ui;
 
-import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.fxapps.temis.model.Alderman;
 import org.fxapps.temis.model.Law;
@@ -15,6 +16,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
@@ -84,41 +86,12 @@ public class TemisClientUI extends BorderPane {
 
 
 	private void loadLaws(Alderman alderman) {
-		Task<List<Law>> loadLawsTask = new Task<List<Law>>() {
-
-			@Override
-			protected List<Law> call() throws Exception {
-				loadingProperty.set(true);
-				return service.laws(alderman, 0, 10000);
-			}
-
-			@Override
-			protected void succeeded() {
-				super.succeeded();
-				loadingProperty.set(false);
-				fadeCenterPane();
-				List<Law> laws = this.getValue();
-				listLaws.getItems().setAll(laws);
-				lblTitleLaw.setText("Foram " + laws.size() + " leis votadas ou criados por " + alderman.getName());
-				listLaws.getSelectionModel().select(0);
-			}
-
-			@Override
-			protected void failed() {
-				loadingProperty.set(false);
-				// TODO do something when it fails..
-				super.failed();
-			}
-
-			@Override
-			protected void done() {
-				loadingProperty.set(false);
-				super.done();
-			}
-		};
-
-		new Thread(loadLawsTask).start();
-
+		doAsyncWork(() -> service.laws(alderman, 0, 10000), laws -> {
+			fadeCenterPane();
+			listLaws.getItems().setAll(laws);
+			lblTitleLaw.setText("Foram " + laws.size() + " leis votadas ou criados por " + alderman.getName());
+			listLaws.getSelectionModel().select(0);
+		});
 	}
 	
 	private void fadeCenterPane(){
@@ -131,41 +104,47 @@ public class TemisClientUI extends BorderPane {
 	}
 	
 	private void loadAldermen() {
-		Task<List<Alderman>> loadAldermenTask = new Task<List<Alderman>>() {
-
+		doAsyncWork(service::aldermen, aldermen -> {
+			loadingProperty.set(false);
+			fadeCenterPane();
+			aldermenList.getItems().setAll(aldermen);
+			aldermenList.getItems().stream().filter(a -> a.getName().equals("Mesa Diretora")).findFirst().ifPresent(a -> {
+				aldermenList.getSelectionModel().select(a);
+				aldermenList.scrollTo(a);
+			});
+		});
+	}
+	
+	
+	public <T extends Object> void doAsyncWork(Supplier<T> action, Consumer<T> success) {
+		Task<T> tarefaCargaPg = new Task<T>() {
 			@Override
-			protected List<Alderman> call() throws Exception {
+			protected T call() throws Exception {
 				loadingProperty.set(true);
-				return service.aldermen();
+				return action.get();
 			}
 
 			@Override
 			protected void succeeded() {
-				super.succeeded();
 				loadingProperty.set(false);
-				fadeCenterPane();
-				aldermenList.getItems().setAll(this.getValue());
-				aldermenList.getItems().stream().filter(a -> a.getName().equals("Mesa Diretora")).findFirst().ifPresent(a -> {
-					aldermenList.getSelectionModel().select(a);
-					aldermenList.scrollTo(a);
-				});
+				success.accept(getValue());
 			}
 
 			@Override
 			protected void failed() {
 				loadingProperty.set(false);
-				// TODO do something when it fails..
-				super.failed();
-			}
-
-			@Override
-			protected void done() {
-				loadingProperty.set(false);
-				super.done();
+				getException().printStackTrace();
+				Alert dialog = new Alert(Alert.AlertType.ERROR);
+				dialog.setTitle("Error");
+				dialog.setHeaderText(null);
+				dialog.setResizable(true);
+				dialog.setContentText("Error acessando Têmis. Verifique se o mesmo está disponível.");
+				dialog.showAndWait();
 			}
 		};
-
-		new Thread(loadAldermenTask).start();
+		Thread t = new Thread(tarefaCargaPg);
+		t.setDaemon(true);
+		t.start();
 	}
 
 }
