@@ -75,16 +75,13 @@ public class TemisClientUI extends BorderPane {
 		aldermenList.setOrientation(Orientation.HORIZONTAL);
 		aldermenList.setCellFactory(param -> new AldermanListCell());
 		aldermenList.setPrefHeight(220);
-		aldermenList.getItems().setAll(service.aldermen());
 		aldermenList.getSelectionModel().selectedItemProperty().addListener((InvalidationListener) observable -> {
 			Alderman alderman = aldermenList.getSelectionModel().getSelectedItem();
 			loadLaws(alderman);
 		});
-		aldermenList.getItems().stream().filter(a -> a.getName().equals("Mesa Diretora")).findFirst().ifPresent(a -> {
-			aldermenList.getSelectionModel().select(a);
-			aldermenList.scrollTo(a);
-		});
+		loadAldermen();
 	}
+
 
 	private void loadLaws(Alderman alderman) {
 		Task<List<Law>> loadLawsTask = new Task<List<Law>>() {
@@ -133,5 +130,42 @@ public class TemisClientUI extends BorderPane {
 		ft.play();
 	}
 	
+	private void loadAldermen() {
+		Task<List<Alderman>> loadAldermenTask = new Task<List<Alderman>>() {
+
+			@Override
+			protected List<Alderman> call() throws Exception {
+				loadingProperty.set(true);
+				return service.aldermen();
+			}
+
+			@Override
+			protected void succeeded() {
+				super.succeeded();
+				loadingProperty.set(false);
+				fadeCenterPane();
+				aldermenList.getItems().setAll(this.getValue());
+				aldermenList.getItems().stream().filter(a -> a.getName().equals("Mesa Diretora")).findFirst().ifPresent(a -> {
+					aldermenList.getSelectionModel().select(a);
+					aldermenList.scrollTo(a);
+				});
+			}
+
+			@Override
+			protected void failed() {
+				loadingProperty.set(false);
+				// TODO do something when it fails..
+				super.failed();
+			}
+
+			@Override
+			protected void done() {
+				loadingProperty.set(false);
+				super.done();
+			}
+		};
+
+		new Thread(loadAldermenTask).start();
+	}
 
 }
