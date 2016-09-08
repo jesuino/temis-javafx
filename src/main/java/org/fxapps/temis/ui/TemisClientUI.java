@@ -12,7 +12,6 @@ import javafx.animation.FadeTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
@@ -57,13 +56,9 @@ public class TemisClientUI extends BorderPane {
 		listLaws = new ListView<>();
 		listLaws.setPrefWidth(100);
 		WebView lawText = new WebView();
-		listLaws.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Law>() {
-
-			@Override
-			public void changed(ObservableValue<? extends Law> observable, Law oldValue, Law newValue) {
-				if (newValue != null && newValue.getDesc() != null) {
-					lawText.getEngine().loadContent(newValue.getDesc());
-				}
+		listLaws.getSelectionModel().selectedItemProperty().addListener((ChangeListener<Law>) (observable, oldValue, newValue) -> {
+			if (newValue != null && newValue.getDesc() != null) {
+				lawText.getEngine().loadContent(newValue.getDesc());
 			}
 		});
 		SplitPane paneLaws = new SplitPane(listLaws, lawText);
